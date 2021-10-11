@@ -1,0 +1,6 @@
+##{$setVar(NAME=var,VALUE=0)}##
+##{$if(CONDITION=EMBED{compare(VAR(var)<5)}EMBED,TRIGGER=testLoop)}##
+    TRIG{$setVar(NAME=var,VALUE=EMBED{arith(VAR(var)+1)}EMBED)}TRIG[testLoop]
+    TRIG{$displayOut('VAR(var)')}TRIG[testLoop]
+    TRIG{$GOTO(2)}TRIG[testLoop]
+##{$EXIT}##

@@ -1,0 +1,8 @@
+##{$displayOut('EMBED{len(Hello)}EMBED')}##
+##{$displayOut('This program is written in Crayon')}##
+##{$displayOut('2 + 2 + 2=') $add(2+2+2)}##
+
+##{$displayOut('Hello World') $displayOut('This program is written in Crayon' you can just kinda) $displayOut('2 + 2 + -2=') $add(2+2+-2)}##
+
+
+##{$EXIT}##

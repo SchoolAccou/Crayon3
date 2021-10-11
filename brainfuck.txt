@@ -1,0 +1,214 @@
+This is technically an interpreter of P" (pronounced P double-prime), a primitive programming language created in 1964 to describe a family of turing machines. Compared to Brainfuck, P" lacks the input command and output command
+
+##{$setVar(NAME=code,VALUE=++++[>++[>+<-]<-])}##
+set code's value to the P" code you want to run
+
+##{$newDict(NAME=cells)}##
+creates cell tape
+
+initializes cell at position 0
+##{$editDict(DICT=cells,KEY=0,VALUE=0)}##
+
+##{$newDict(NAME=loopList)}##
+creates list of loops
+
+##{$newDict(NAME=loopNums)}##
+assigns key values to each loop in loopList
+
+##{$setVar(NAME=loopCount,VALUE=0)}##
+counts loops in loopNums
+
+##{$setVar(NAME=numCells,VALUE=0)}##
+counts cells
+
+##{$setVar(NAME=dataPointer,VALUE=0)}##
+creates data pointer
+
+##{$setVar(NAME=instructionPointer,VALUE=0)}##
+creates instruction pointer
+
+##{$setVar(NAME=codeLength,VALUE=EMBED{len(VAR(code))}EMBED)}##
+
+##{$if(CONDITION=EMBED{compare(VAR(instructionPointer)<VAR(codeLength))}EMBED,TRIGGER=Interpret)}##
+
+    TRIG{$setVar(NAME=currentCellValue,VALUE=EMBED{getDict(DICT=cells,KEY=VAR(dataPointer))}EMBED)}TRIG[Interpret]
+    TRIG{$displayOut('VAR(currentCellValue)')}TRIG[Interpret] debugging code
+    TRIG{$setVar(NAME=currentInstruction,VALUE=EMBED{index(STRING='VAR(code)',INDEX=VAR(instructionPointer))}EMBED)}TRIG[Interpret]
+
+    displays current instruction
+    TRIG{$displayOut('Instruction VAR(instructionPointer): VAR(currentInstruction)')}TRIG[Interpret]
+
+    Plus Command
+    TRIG{$if(CONDITION=EMBED{eval('VAR(currentInstruction)'='+')}EMBED,TRIGGER=plusCommand)}TRIG[Interpret]
+        TRIG{$setVar(NAME=newVal,VALUE=EMBED{arith(VAR(currentCellValue)+1)}EMBED)}TRIG[plusCommand]
+        TRIG{$displayOut('newVal: VAR(newVal)')} commented, for debugging
+        TRIG{$editDict(DICT=cells,KEY=VAR(dataPointer),VALUE=EMBED{int(VAR(newVal))}EMBED)}TRIG[plusCommand]
+    sets the condition of plusCommand to False, ending the if loop
+    TRIG{$if(CONDITION=False,TRIGGER=plusCommand)}TRIG[plusCommand]
+    
+    Minus Command
+    TRIG{$if(CONDITION=EMBED{eval('VAR(currentInstruction)'='-')}EMBED,TRIGGER=minusCommand)}TRIG[Interpret]
+        TRIG{$setVar(NAME=newVal,VALUE=EMBED{arith(VAR(currentCellValue)-1)}EMBED)}TRIG[minusCommand]
+        TRIG{$displayOut('newVal: VAR(newVal)')} commented, for debugging
+        TRIG{$editDict(DICT=cells,KEY=VAR(dataPointer),VALUE=EMBED{int(VAR(newVal))}EMBED)}TRIG[minusCommand]
+    ##{$if(CONDITION=False,TRIGGER=minusCommand)}##
+    
+    Forward Command
+    TRIG{$if(CONDITION=EMBED{eval('VAR(currentInstruction)'='>')}EMBED,TRIGGER=FwdCommand)}TRIG[Interpret]
+        TRIG{$setVar(NAME=dataPointer,VALUE=EMBED{arith(VAR(dataPointer)+1)}EMBED)}TRIG[FwdCommand]
+        TRIG{$setVar(NAME=dataPointer,VALUE=EMBED{int(VAR(dataPointer))}EMBED)}TRIG[FwdCommand]
+        TRIG{$if(CONDITION=EMBED{compare(VAR(dataPointer)>VAR(numCells))}EMBED,TRIGGER=addCell)}TRIG[FwdCommand]
+            TRIG{$editDict(DICT=cells,KEY=VAR(dataPointer),VALUE=0)}TRIG[addCell]
+            TRIG{$setVar(NAME=numCells,VALUE=EMBED{arith(VAR(numCells)+1)}EMBED)}TRIG[addCell]
+            TRIG{$setVar(NAME=numCells,VALUE=EMBED{int(VAR(numCells))}EMBED)}TRIG[addCell]
+        ##{$if(CONDITION=False,TRIGGER=addCell)}##
+    ##{$if(CONDITION=False,TRIGGER=FwdCommand)}##
+
+    Backward Command
+    TRIG{$if(CONDITION=EMBED{eval('VAR(currentInstruction)'='<')}EMBED,TRIGGER=BackCommand)}TRIG[Interpret]
+        TRIG{$setVar(NAME=dataPointer,VALUE=EMBED{arith(VAR(dataPointer)-1)}EMBED)}TRIG[BackCommand]
+        TRIG{$setVar(NAME=dataPointer,VALUE=EMBED{int(VAR(dataPointer))}EMBED)}TRIG[BackCommand]
+        TRIG{$if(CONDITION=EMBED{compare(VAR(dataPointer)<0)}EMBED,TRIGGER=underflowError)}TRIG[BackCommand]
+            TRIG{$displayOut('ERROR: IntegerUnderflow, cell value cannot go below 0')}TRIG[underflowError]
+            TRIG{$EXIT}TRIG[underflowError]
+        ##{$if(CONDITION=False,TRIGGER=underflowError)}##
+    ##{$if(CONDITION=False,TRIGGER=BackCommand)}##
+
+    Left Bracket Command
+    TRIG{$if(CONDITION=EMBED{eval('VAR(currentInstruction)'='[')}EMBED,TRIGGER=LBracketCommand)}TRIG[Interpret]
+        TRIG{$setVar(NAME=loopExists,VALUE=False)}TRIG[LBracketCommand]
+        TRIG{$setVar(NAME=loopNum,VALUE=0)}TRIG[LBracketCommand]
+
+        Checks if a loop exists that has a starting position at the instuction pointer's current position
+        TRIG{$if(CONDITION=EMBED{compare(VAR(loopNum)<VAR(loopCount))}EMBED,TRIGGER=loopIterate)}TRIG[LBracketCommand]
+
+            gets starting position of loop
+            TRIG{$setVar(NAME=startPos,VALUE=EMBED{getDict(DICT=loopNums,KEY=VAR(loopNum))}EMBED)}TRIG[loopIterate]
+
+            evaluates if the loop exists
+            TRIG{$if(CONDITION=EMBED{eval('VAR(startPos)'='VAR(instructionPointer)')}EMBED,TRIGGER=confirmLoopExists)}TRIG[loopIterate]
+                TRIG{$setVar(NAME=loopExists,VALUE=True)}TRIG[confirmLoopExists]
+
+                Breaks while loop
+                TRIG{$GOTO(106)}TRIG[confirmLoopExists]
+
+            ##{$if(CONDITION=False,TRIGGER=confirmLoopExists)}##
+
+            adds 1 to loopNum
+            TRIG{$setVar(NAME=loopNum,VALUE=EMBED{arith(VAR(loopNum)+1)}EMBED)}TRIG[loopIterate]
+
+            converts loopNum to integer
+            TRIG{$setVar(NAME=loopNum,VALUE=EMBED{int(VAR(loopNum))}EMBED)}TRIG[loopIterate]
+
+        end of while loop
+        TRIG{$GOTO(83)}TRIG[loopIterate]
+
+        ##{$if(CONDITION=False,TRIGGER=loopIterate)}##
+        ##{$if(CONDITION=False,TRIGGER=confirmLoopExists)}##
+
+        TRIG{$notIf(CONDITION=VAR(loopExists),TRIGGER=createLoop)}TRIG[LBracketCommand]
+
+            appends new loop to loopList
+            TRIG{$editDict(DICT=loopNums,KEY=VAR(loopCount),VALUE=VAR(instructionPointer))}TRIG[createLoop]
+            TRIG{$editDict(DICT=loopList,KEY=VAR(instructionPointer),VALUE=NoEndPos))}TRIG[createLoop]
+
+            adds 1 to loopCount
+            TRIG{$setVar(NAME=loopCount,VALUE=EMBED{arith(VAR(loopCount)+1)}EMBED)}TRIG[createLoop]
+
+            converts loopCount to integer
+            TRIG{$setVar(NAME=loopCount,VALUE=EMBED{int(VAR(loopCount))}EMBED)}TRIG[createLoop]
+        
+        ##{$if(CONDITION=False,TRIGGER=createLoop)}##
+
+        TRIG{$if(CONDITION=EMBED{eval('VAR(currentCellValue)'='0')}EMBED,TRIGGER=checkLoop)}TRIG[LBracketCommand]
+        
+            for loop
+            TRIG{$setVar(NAME=loopNum,VALUE=0)}TRIG[checkLoop]
+            TRIG{$if(CONDITION=EMBED{compare(VAR(loopNum)<VAR(loopCount))}EMBED,TRIGGER=loopIterate)}TRIG[checkLoop]
+
+                checks if startPos is equal to instructionPointer and if endPos is not None
+                TRIG{$setVar(NAME=startPos,VALUE=EMBED{getDict(DICT=loopNums,KEY=VAR(loopNum))}EMBED)}TRIG[loopIterate]
+                TRIG{$setVar(NAME=endPos,VALUE=EMBED{getDict(DICT=loopList,KEY=VAR(startPos))}EMBED)}TRIG[loopIterate]
+                TRIG{$if(CONDITION=EMBED{eval('VAR(startPos)'='VAR(instructionPointer)')}EMBED,TRIGGER=checkLoopI)}TRIG[loopIterate]
+                    TRIG{$notIf(CONDITION=EMBED{eval('VAR(endPos)'='NoEndPos')}EMBED,TRIGGER=checkLoopII)}TRIG[checkLoopI]
+                        TRIG{$setVar(NAME=instructionPointer,VALUE=VAR(endPos))}TRIG[checkLoopII]
+                        breaks loop
+                        TRIG{GOTO(149)}TRIG[checkLoopII]
+                    ##{$if(CONDITION=False,TRIGGER=checkLoopII)}##
+                ##{$if(CONDITION=False,TRIGGER=checkLoopI)}##
+            
+                adds 1 to loopNum
+                TRIG{$setVar(NAME=loopNum,VALUE=EMBED{arith(VAR(loopNum)+1)}EMBED)}TRIG[loopIterate]
+
+                converts loopNum to integer
+                TRIG{$setVar(NAME=loopNum,VALUE=EMBED{int(VAR(loopNum))}EMBED)}TRIG[loopIterate]
+            
+            end of for loop
+            TRIG{$GOTO(127)}TRIG[loopIterate]
+
+            ##{$if(CONDITION=False,TRIGGER=loopIterate)}##
+            ##{$if(CONDITION=False,TRIGGER=checkLoopII)}##
+            ##{$if(CONDITION=False,TRIGGER=checkLoopI)}##
+
+            
+
+    Right Bracket Command
+    TRIG{$if(CONDITION=EMBED{eval('VAR(currentInstruction)'=']')}EMBED,TRIGGER=RBracketCommand)}TRIG[Interpret]
+
+        TRIG{$setVar(NAME=Bracket,VALUE=NoBracket)}TRIG[RBracketCommand]
+
+        TRIG{$setVar(NAME=loopNum,VALUE=VAR(loopCount))}TRIG[RBracketCommand]
+        TRIG{$displayOut('loopnum: VAR(loopNum)')} debugging code
+
+        for loop
+        TRIG{$setVar(NAME=loopNum,VALUE=EMBED{arith(VAR(loopNum)-1)}EMBED)}TRIG[RBracketCommand]
+        TRIG{$setVar(NAME=loopNum,VALUE=EMBED{int(VAR(loopNum))}EMBED)}TRIG[RBracketCommand]
+        TRIG{$if(CONDITION=EMBED{compare(VAR(loopNum)>-1)}EMBED,TRIGGER=reverseIterate)}TRIG[RBracketCommand]
+
+            TRIG{$setVar(NAME=startPos,VALUE=EMBED{getDict(DICT=loopNums,KEY=VAR(loopNum))}EMBED)}TRIG[reverseIterate]
+            TRIG{$setVar(NAME=endPos,VALUE=EMBED{getDict(DICT=loopList,KEY=VAR(startPos))}EMBED)}TRIG[reverseIterate]
+            TRIG{$if(CONDITION=EMBED{eval('VAR(endPos)'='NoEndPos')}EMBED,TRIGGER=editLoop)}TRIG[reverseIterate]
+                TRIG{$setVar(NAME=Bracket,VALUE=VAR(startPos))}TRIG[editLoop]
+                TRIG{$editDict(DICT=loopList,KEY=VAR(startPos),VALUE=VAR(endPos))}TRIG[editLoop]
+                TRIG{$displayOut('No End Position')}TRIG[editLoop] debugging code
+                TRIG{$GOTO(188)}TRIG[editLoop] Breaks loop
+                ##{$if(CONDITION=False,TRIGGER=editLoop)}##
+            TRIG{$if(CONDITION=EMBED{eval('VAR(endPos)'='VAR(instructionPointer)')}EMBED,TRIGGER=setBrack)}TRIG[reverseIterate]
+                TRIG{$setVar(NAME=Bracket,VALUE=VAR(startPos))}TRIG[setBrack]
+                TRIG{$displayOut('End Position')}TRIG[setBrack] debugging code
+                TRIG{$GOTO(188)}TRIG[setBrack] Breaks loop
+                ##{$if(CONDITION=False,TRIGGER=setBrack)}##
+
+            TRIG{$setVar(NAME=loopNum,VALUE=EMBED{arith(VAR(loopNum)-1)}EMBED)}TRIG[reverseIterate]
+            TRIG{$setVar(NAME=loopNum,VALUE=EMBED{int(VAR(loopNum))}EMBED)}TRIG[reverseIterate]
+            TRIG{$displayOut('loop number: VAR(loopNum)')}TRIG[reverseIterate] debugging code
+            TRIG{$GOTO(166)}TRIG[reverseIterate]
+    
+
+        ##{$if(CONDITION=False,TRIGGER=editLoop)}##
+        ##{$if(CONDITION=False,TRIGGER=setBrack)}## 
+        ##{$if(CONDITION=False,TRIGGER=reverseIterate)}##    
+        TRIG{$notIf(CONDITION=EMBED{eval('VAR(currentCellValue)'='0')}EMBED,TRIGGER=gotoLoop)}TRIG[RBracketCommand]
+            TRIG{$setVar(NAME=Bracket,VALUE=EMBED{arith(VAR(Bracket)-1)}EMBED)}TRIG[gotoLoop]
+            TRIG{$setVar(NAME=Bracket,VALUE=EMBED{int(VAR(Bracket))}EMBED)}TRIG[gotoLoop]
+            TRIG{$setVar(NAME=instructionPointer,VALUE=VAR(Bracket))}TRIG[gotoLoop]
+            TRIG{$displayOut('goto instruction VAR(instructionPointer)')}TRIG[gotoLoop] debugging code
+        ##{$if(CONDITION=False,TRIGGER=gotoLoop)}##
+
+        
+
+    adds one to the instruction pointer
+    TRIG{$setVar(NAME=instructionPointer,VALUE=EMBED{arith(VAR(instructionPointer)+1)}EMBED)}TRIG[Interpret]
+    converts value into integer
+    TRIG{$setVar(NAME=instructionPointer,VALUE=EMBED{int(VAR(instructionPointer))}EMBED)}TRIG[Interpret]
+
+    End while loop
+    TRIG{$GOTO(32)}TRIG[Interpret]
+
+##{$setVar(NAME=cellNum,VALUE=0)}##
+##{$setVar(NAME=numCells,VALUE=EMBED{arith(VAR(numCells)+1)}EMBED)}##
+##{$notIf(CONDITION=EMBED{compare(VAR(cellNum)>VAR(numCells))}EMBED,TRIGGER=displayCells)}##
+    TRIG{$displayOut('Cell VAR(cellNum): EMBED{getDict(DICT=cells,KEY=VAR(cellNum))}EMBED')}TRIG[displayCells]
+    TRIG{$setVar(NAME=cellNum,VALUE=EMBED{arith(VAR(cellNum)+1)}EMBED)}TRIG[displayCells]
+    TRIG{$setVar(NAME=cellNum,VALUE=EMBED{int(VAR(cellNum))}EMBED)}TRIG[displayCells]
+    TRIG{$GOTO(207)}TRIG[displayCells]

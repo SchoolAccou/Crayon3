@@ -1,0 +1,6 @@
+##{$setVar(NAME=inVar,VALUE=EMBED{userInput('Input a number lower than X: ')}EMBED)}##
+##{$setVar(NAME=boolVar,VALUE=EMBED{compare(VAR(inVar)<10)}EMBED)}##
+##{$notIf(CONDITION=VAR(boolVar),TRIGGER=biggerThanTen)}##
+    TRIG{$displayOut('EMBED{int(VAR(inVar))}EMBED isn't lower than X') $displayOut('Try again')}TRIG[biggerThanTen]
+    TRIG{$GOTO(1)}TRIG[biggerThanTen]
+##{$displayOut('Good Job!')}##

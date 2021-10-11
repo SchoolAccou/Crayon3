@@ -1,0 +1,9 @@
+##{$displayOut('This Program is written in crayon')}##
+##{$displayOut('   ')}##
+
+##{$setVar(NAME=firstName,VALUE=EMBED{userInput('What is your first name? ')}EMBED)}##
+##{$setVar(NAME=lastName,VALUE=EMBED{userInput('What is your last name? ')}EMBED)}##
+
+##{$displayOut('Hello, VAR(firstName) VAR(lastName)')}##
+
+##{$EXIT}##

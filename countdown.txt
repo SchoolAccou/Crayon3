@@ -1,0 +1,8 @@
+##{$setVar(NAME=count,VALUE=EMBED{userInput('Countdown Number: ')}EMBED)}##
+##{$if(CONDITION=EMBED{compare(VAR(count)>1000000)}EMBED,TRIGGER=biggerThanMillion)}##
+    TRIG{$displayOut('No, are you insane?')}TRIG[biggerThanMillion]
+    TRIG{$EXIT}TRIG[biggerThanMillion]
+##{$notIf(CONDITION=EMBED{compare(VAR(count)<0)}EMBED,TRIGGER=countdown)}##
+    TRIG{$displayOut('VAR(count)')}TRIG[countdown]
+    TRIG{$setVar(NAME=count,VALUE=EMBED{arith(VAR(count)-1)}EMBED)}TRIG[countdown]
+    TRIG{$GOTO(2)}TRIG[countdown]

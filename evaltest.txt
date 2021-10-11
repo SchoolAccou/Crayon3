@@ -1,0 +1,7 @@
+
+##{$displayOut('EMBED{eval('Bob'='Bob')}EMBED')}##
+
+##{$setVar(NAME=nameVar,VALUE=EMBED{userInput('What is your name? ')}EMBED)}##
+##{$setVar(NAME=boolVar,VALUE=EMBED{eval('VAR(nameVar)'='Bob')}EMBED)}##
+##{$displayOut('IS YOU HAS THE NAME ARE BOB?? ANSWER IS MAY MAKE YOU OF THE SHOCK!!! EMBED{eval('VAR(nameVar)'='Bob')}EMBED')}##
+##{$displayOut('GRAMMER HAS OF ARE THE UTMOST OF QUALITIES')}##

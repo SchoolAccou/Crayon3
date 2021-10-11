@@ -1,0 +1,4 @@
+##{$setVar(NAME=inVar,VALUE=EMBED{userInput('enter a string: ')}EMBED)}##
+##{$if(CONDITION=True,TRIGGER=program)}##
+    TRIG{$setVar(NAME=outVar,VALUE=EMBED{index(STRING='VAR(inVar)',INDEX=5)}EMBED)}TRIG[program]
+##{$displayOut('VAR(outVar)')}##

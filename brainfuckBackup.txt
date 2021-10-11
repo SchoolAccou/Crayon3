@@ -1,0 +1,93 @@
+This is technically an interpreter of P" (pronounced P double-prime), a primitive programming language created in 1964 to describe a family of turing machines. Compared to Brainfuck, P" lacks the input command and output command
+
+##{$setVar(NAME=code,VALUE=++++>++++--<-->++)}##
+set code's value to the P" code you want to run
+
+##{$newDict(NAME=cells)}##
+creates cell tape
+
+initializes cell at position 0
+##{$editDict(DICT=cells,KEY=0,VALUE=0)}##
+
+##{$newDict(NAME=loopList)}##
+creates list of loops
+
+##{$newDict(NAME=loopNums)}##
+assigns key values to each loop in loopList
+
+##{$setVar(NAME=loopCount,VALUE=0)}##
+counts loops in loopNums
+
+##{$setVar(NAME=numCells,VALUE=0)}##
+counts cells
+
+##{$setVar(NAME=dataPointer,VALUE=0)}##
+creates data pointer
+
+##{$setVar(NAME=instructionPointer,VALUE=0)}##
+creates instruction pointer
+
+##{$setVar(NAME=codeLength,VALUE=EMBED{len(VAR(code))}EMBED)}##
+
+##{$if(CONDITION=EMBED{compare(VAR(instructionPointer)<VAR(codeLength))}EMBED,TRIGGER=Interpret)}##
+
+    TRIG{$setVar(NAME=currentCellValue,VALUE=EMBED{getDict(DICT=cells,KEY=VAR(dataPointer))}EMBED)}TRIG[Interpret]
+    TRIG{$displayOut('VAR(currentCellValue)')}
+    TRIG{$setVar(NAME=currentInstruction,VALUE=EMBED{index(STRING='VAR(code)',INDEX=VAR(instructionPointer))}EMBED)}TRIG[Interpret]
+
+    Plus Command
+    TRIG{$if(CONDITION=EMBED{eval('VAR(currentInstruction)'='+')}EMBED,TRIGGER=plusCommand)}TRIG[Interpret]
+        TRIG{$setVar(NAME=newVal,VALUE=EMBED{arith(VAR(currentCellValue)+1)}EMBED)}TRIG[plusCommand]
+        TRIG{$displayOut('newVal: VAR(newVal)')} commented, for debugging
+        TRIG{$editDict(DICT=cells,KEY=VAR(dataPointer),VALUE=EMBED{int(VAR(newVal))}EMBED)}TRIG[plusCommand]
+    sets the condition of plusCommand to False, ending the if loop
+    TRIG{$if(CONDITION=False,TRIGGER=plusCommand)}TRIG[plusCommand]
+    
+    Minus Command
+    TRIG{$if(CONDITION=EMBED{eval('VAR(currentInstruction)'='-')}EMBED,TRIGGER=minusCommand)}TRIG[Interpret]
+        TRIG{$setVar(NAME=newVal,VALUE=EMBED{arith(VAR(currentCellValue)-1)}EMBED)}TRIG[minusCommand]
+        TRIG{$displayOut('newVal: VAR(newVal)')} commented, for debugging
+        TRIG{$editDict(DICT=cells,KEY=VAR(dataPointer),VALUE=EMBED{int(VAR(newVal))}EMBED)}TRIG[minusCommand]
+    ##{$if(CONDITION=False,TRIGGER=minusCommand)}##
+    
+    Forward Command
+    TRIG{$if(CONDITION=EMBED{eval('VAR(currentInstruction)'='>')}EMBED,TRIGGER=FwdCommand)}TRIG[Interpret]
+        TRIG{$setVar(NAME=dataPointer,VALUE=EMBED{arith(VAR(dataPointer)+1)}EMBED)}TRIG[FwdCommand]
+        TRIG{$setVar(NAME=dataPointer,VALUE=EMBED{int(VAR(dataPointer))}EMBED)}TRIG[FwdCommand]
+        TRIG{$if(CONDITION=EMBED{compare(VAR(dataPointer)>VAR(numCells))}EMBED,TRIGGER=addCell)}TRIG[FwdCommand]
+            TRIG{$editDict(DICT=cells,KEY=VAR(dataPointer),VALUE=0)}TRIG[addCell]
+        ##{$if(CONDITION=False,TRIGGER=addCell)}##
+    ##{$if(CONDITION=False,TRIGGER=FwdCommand)}##
+
+    Backward Command
+    TRIG{$if(CONDITION=EMBED{eval('VAR(currentInstruction)'='<')}EMBED,TRIGGER=BackCommand)}TRIG[Interpret]
+        TRIG{$setVar(NAME=dataPointer,VALUE=EMBED{arith(VAR(dataPointer)-1)}EMBED)}TRIG[BackCommand]
+        TRIG{$setVar(NAME=dataPointer,VALUE=EMBED{int(VAR(dataPointer))}EMBED)}TRIG[BackCommand]
+        TRIG{$if(CONDITION=EMBED{compare(VAR(dataPointer)>0)}EMBED,TRIGGER=underflowError)}TRIG[BackCommand]
+            TRIG{$displayOut('ERROR: IntegerUnderflow, cell value cannot go below 0')}TRIG[underflowError]
+            TRIG{$EXIT}TRIG[underflowError]
+        ##{$if(CONDITION=False,TRIGGER=underflowError)}##
+    ##{$if(CONDITION=False,TRIGGER=BackCommand)}##
+
+    Left Bracket Command
+    TRIG{$if(CONDITION=EMBED{eval('VAR(currentInstruction)'='[')}EMBED,TRIGGER=LBracketCommand)}TRIG[Interpret]
+
+    Right Bracket Command
+    TRIG{$if(CONDITION=EMBED{eval('VAR(currentInstruction)'=']')}EMBED,TRIGGER=RBracketCommand)}TRIG[Interpret]
+
+    adds one to the instruction pointer
+    TRIG{$setVar(NAME=instructionPointer,VALUE=EMBED{arith(VAR(instructionPointer)+1)}EMBED)}TRIG[Interpret]
+    converts value into integer
+    TRIG{$setVar(NAME=instructionPointer,VALUE=EMBED{int(VAR(instructionPointer))}EMBED)}TRIG[Interpret]
+
+    End while loop, and displays instructions being executed
+    TRIG{$displayOut('Instruction VAR(instructionPointer): VAR(currentInstruction)')}TRIG[Interpret]
+    TRIG{$GOTO(32)}TRIG[Interpret]
+
+##{$setVar(NAME=cellNum,VALUE=0)}##
+##{$setVar(NAME=numCells,VALUE=EMBED{arith(VAR(numCells)+1)}EMBED)}##
+##{$notIf(CONDITION=EMBED{compare(VAR(cellNum)>VAR(numCells))}EMBED,TRIGGER=displayCells)}##
+    TRIG{$displayOut('Cell VAR(cellNum): EMBED{getDict(DICT=cells,KEY=VAR(cellNum))}EMBED')}TRIG[displayCells]
+    TRIG{$setVar(NAME=cellNum,VALUE=EMBED{arith(VAR(cellNum)+1)}EMBED)}TRIG[displayCells]
+    TRIG{$setVar(NAME=cellNum,VALUE=EMBED{int(VAR(cellNum))}EMBED)}TRIG[displayCells]
+    TRIG{$GOTO(89)}TRIG[displayCells]

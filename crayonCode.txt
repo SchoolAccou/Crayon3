@@ -1,0 +1,5 @@
+##{$displayOut('This program is written in Crayon')}##
+##{$displayOut('Note to self: Do not, under any circumstances, write code in Microsoft Word ever again')}##
+##{$HOW_SAY_CRAYON}##
+##{$add(2+2) $add(2+-2) $add(2+2+2+2+2+2+2+2)}##
+##{$displayOut('Giraffes are heartless creatures')}##

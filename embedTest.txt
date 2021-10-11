@@ -1,0 +1,7 @@
+##{$displayOut('This program is written in crayon')}##
+##{$setVar(NAME=varFirstName,VALUE=EMBED{userInput('What is Your First Name? ')}EMBED)}##
+##{$setVar(NAME=varLastName,VALUE=EMBED{userInput('What is Your Last Name? ')}EMBED)}##
+
+embedding code EMBED{Like This}EMBED tells the interpreter to execute it First
+
+##{$displayOut('Hello, VAR(varFirstName) VAR(varLastName)')}##
