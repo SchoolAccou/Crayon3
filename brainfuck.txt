@@ -1,6 +1,6 @@
 This is technically an interpreter of P" (pronounced P double-prime), a primitive programming language created in 1964 to describe a family of turing machines. Compared to Brainfuck, P" lacks the input command and output command
 
-##{$setVar(NAME=code,VALUE=++++[>++[>+<-]<-])}##
+##{$setVar(NAME=code,VALUE=+++++>+>+<<[>[>>+<<-]>[>+<<+>-]>[<+>-]<<<-])}##
 set code's value to the P" code you want to run
 
 ##{$newDict(NAME=cells)}##
@@ -32,7 +32,7 @@ creates instruction pointer
 ##{$if(CONDITION=EMBED{compare(VAR(instructionPointer)<VAR(codeLength))}EMBED,TRIGGER=Interpret)}##
 
     TRIG{$setVar(NAME=currentCellValue,VALUE=EMBED{getDict(DICT=cells,KEY=VAR(dataPointer))}EMBED)}TRIG[Interpret]
-    TRIG{$displayOut('VAR(currentCellValue)')}TRIG[Interpret] debugging code
+    TRIG{$displayOut('current cell value: VAR(currentCellValue)')} debugging code
     TRIG{$setVar(NAME=currentInstruction,VALUE=EMBED{index(STRING='VAR(code)',INDEX=VAR(instructionPointer))}EMBED)}TRIG[Interpret]
 
     displays current instruction
@@ -169,19 +169,19 @@ creates instruction pointer
             TRIG{$setVar(NAME=endPos,VALUE=EMBED{getDict(DICT=loopList,KEY=VAR(startPos))}EMBED)}TRIG[reverseIterate]
             TRIG{$if(CONDITION=EMBED{eval('VAR(endPos)'='NoEndPos')}EMBED,TRIGGER=editLoop)}TRIG[reverseIterate]
                 TRIG{$setVar(NAME=Bracket,VALUE=VAR(startPos))}TRIG[editLoop]
-                TRIG{$editDict(DICT=loopList,KEY=VAR(startPos),VALUE=VAR(endPos))}TRIG[editLoop]
-                TRIG{$displayOut('No End Position')}TRIG[editLoop] debugging code
+                TRIG{$editDict(DICT=loopList,KEY=VAR(startPos),VALUE=VAR(instructionPointer))}TRIG[editLoop]
+                TRIG{$displayOut('No End Position')} debugging code
                 TRIG{$GOTO(188)}TRIG[editLoop] Breaks loop
                 ##{$if(CONDITION=False,TRIGGER=editLoop)}##
             TRIG{$if(CONDITION=EMBED{eval('VAR(endPos)'='VAR(instructionPointer)')}EMBED,TRIGGER=setBrack)}TRIG[reverseIterate]
                 TRIG{$setVar(NAME=Bracket,VALUE=VAR(startPos))}TRIG[setBrack]
-                TRIG{$displayOut('End Position')}TRIG[setBrack] debugging code
+                TRIG{$displayOut('End Position')} debugging code
                 TRIG{$GOTO(188)}TRIG[setBrack] Breaks loop
                 ##{$if(CONDITION=False,TRIGGER=setBrack)}##
 
             TRIG{$setVar(NAME=loopNum,VALUE=EMBED{arith(VAR(loopNum)-1)}EMBED)}TRIG[reverseIterate]
             TRIG{$setVar(NAME=loopNum,VALUE=EMBED{int(VAR(loopNum))}EMBED)}TRIG[reverseIterate]
-            TRIG{$displayOut('loop number: VAR(loopNum)')}TRIG[reverseIterate] debugging code
+            TRIG{$displayOut('loop number: VAR(loopNum)')} debugging code
             TRIG{$GOTO(166)}TRIG[reverseIterate]
     
 
@@ -192,7 +192,8 @@ creates instruction pointer
             TRIG{$setVar(NAME=Bracket,VALUE=EMBED{arith(VAR(Bracket)-1)}EMBED)}TRIG[gotoLoop]
             TRIG{$setVar(NAME=Bracket,VALUE=EMBED{int(VAR(Bracket))}EMBED)}TRIG[gotoLoop]
             TRIG{$setVar(NAME=instructionPointer,VALUE=VAR(Bracket))}TRIG[gotoLoop]
-            TRIG{$displayOut('goto instruction VAR(instructionPointer)')}TRIG[gotoLoop] debugging code
+            TRIG{$setVar(NAME=displayPointer,VALUE=EMBED{arith(VAR(instructionPointer)+1)}EMBED)}TRIG[gotoLoop]
+            TRIG{$displayOut('Go to instruction EMBED{int(VAR(displayPointer))}EMBED')}TRIG[gotoLoop] debugging code
         ##{$if(CONDITION=False,TRIGGER=gotoLoop)}##
 
         
@@ -211,4 +212,5 @@ creates instruction pointer
     TRIG{$displayOut('Cell VAR(cellNum): EMBED{getDict(DICT=cells,KEY=VAR(cellNum))}EMBED')}TRIG[displayCells]
     TRIG{$setVar(NAME=cellNum,VALUE=EMBED{arith(VAR(cellNum)+1)}EMBED)}TRIG[displayCells]
     TRIG{$setVar(NAME=cellNum,VALUE=EMBED{int(VAR(cellNum))}EMBED)}TRIG[displayCells]
-    TRIG{$GOTO(207)}TRIG[displayCells]
+    TRIG{$GOTO(211)}TRIG[displayCells]
+##{$displayOut('Pointer on cell VAR(dataPointer)')}##
